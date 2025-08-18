@@ -1,16 +1,80 @@
 ---
-
+import FormRegister from "../components/FormRegister.astro";
+import BaseLayout from "../layout/BaseLayout.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="r" description="w">
+  <button onclick="history.back()">Volver atrás</button>
+  <br />
+  <h1>Nueva guia</h1>
+  <br />
+  <form id="formPrincipal" class="flex gap-6">
+    <div class="flex items-center gap-3">
+      <label class="whitespace-nowrap" for="guia">N° Guia</label>
+      <input id="guia" type="tel" name="guia" required />
+    </div>
+	
+    <div class="flex gap-3">
+      <input class="button-style green" type="submit" value="Agregar" />
+      <button class="button-style red" type="button" onclick="localStorage.clear(); location.reload();"
+        >Finalizar</button
+      >
+    </div>
+  </form>
+
+  <FormRegister />
+</BaseLayout>
+
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const form = document.getElementById('formPrincipal') as HTMLFormElement
+    const dialog = document.getElementById('formDialog') as HTMLDialogElement
+    const input = document.getElementById('guia') as HTMLInputElement
+    const valorGuardado = localStorage.getItem('guiaActiva')
+
+    const nav = document.querySelector('nav[aria-label="Opciones de filtro"]')!
+
+    const eventosVista: Record<string, string> = {
+      'btn-global': 'localStorageUpdate',
+      'btn-tipo': 'vista:tipo',
+      'btn-bulto': 'vista:bulto',
+    }
+
+    nav?.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest('button')
+      if (!target || !target.id || !(target.id in eventosVista)) return
+
+      // Quitar clase .green a todos los botones hijos
+      nav
+        .querySelectorAll('button')
+        .forEach((btn) => btn.classList.remove('green'))
+
+      // Agregar clase .green al botón activo
+      target.classList.add('green')
+
+      // Lanzar el evento correspondiente
+      const evento = eventosVista[target.id]
+      
+      window.dispatchEvent(new CustomEvent(evento))
+    })
+
+    if (input && valorGuardado) {
+      input.value = valorGuardado
+    }
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault()
+
+      if (form.checkValidity()) {
+        dialog.showModal()
+        localStorage.setItem(
+          'guiaActiva',
+          document.querySelector<HTMLInputElement>('#guia')?.value || '',
+        )
+      } else {
+        form.reportValidity()
+      }
+    })
+  })
+</script>

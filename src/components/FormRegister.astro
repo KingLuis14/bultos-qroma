@@ -1,0 +1,118 @@
+<dialog id="formDialog">
+  <form class="grid gap-3">
+    <!-- Producto -->
+    <fieldset>
+      <label for="producto">Producto</label>
+      <input class="mt-2.5" type="text" id="producto" name="producto" required />
+    </fieldset>
+
+    <!-- Tipo -->
+    <fieldset id="grupo-tipo">
+      <label for="tipo">Tipo</label>
+      <div class="flex gap-4 mt-2.5">
+        <div id="tipo-contenedor" class="grow">
+          <select id="tipo" name="tipo">
+            <option value="opcion1">Opción 1</option>
+            <option value="opcion2">Opción 2</option>
+            <option value="opcion3">Opción 3</option>
+          </select>
+
+          <input type="text" id="tipo" name="tipo" placeholder="Escribe tu tipo" style="display: none;" />
+        </div>
+
+        <div class="flex">
+          <label>
+            <input type="radio" name="tipo-opcion" value="select" checked />
+            Select
+          </label>
+          <label>
+            <input type="radio" name="tipo-opcion" value="custom" />
+            Custom
+          </label>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Paq -->
+    <fieldset>
+      <label for="paq">Paq</label>
+      <input class="mt-2.5" type="number" id="paq" name="paq" min="1" required />
+    </fieldset>
+
+    <!-- Cantidad -->
+    <fieldset>
+      <label for="cantidad-area">Cantidad</label>
+      <textarea id="cantidad-area" inputmode="numeric"  name="cantidad" rows="4" class="mt-2.5 w-full"></textarea>
+    </fieldset>
+
+    <!-- Botón -->
+    <div class="flex gap-4 [&>*]:flex-1">
+      <button type="submit" class="button-style green" id="calcularBtn">Guardar</button>
+      <button type="button" class="button-style red" onclick="document.getElementById('formDialog').close()"
+        >Cancelar</button
+      >
+    </div>
+  </form>
+</dialog>
+
+<style>
+  dialog {
+    border: none;
+    border-radius: 8px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    background: rgb(27, 27, 27);
+    padding: 1rem;
+    max-width: 500px;
+  }
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(1.5px);
+  }
+</style>
+
+<script>
+  const contenedor = document.getElementById("tipo-contenedor");
+  const contenedorTipo = document.getElementById("grupo-tipo");
+
+  const select = contenedor?.querySelector("select") as HTMLSelectElement;
+  const input = contenedor?.querySelector('input[type="text"]') as HTMLInputElement;
+
+  contenedorTipo?.addEventListener("click", (e: MouseEvent) => {
+    const target = e.target as HTMLInputElement;
+
+    if (target?.name === "tipo-opcion") {
+      if (target.value === "select") {
+        select.style.display = "block";
+        input.style.display = "none";
+      } else {
+        select.style.display = "none";
+        input.style.display = "block";
+      }
+    }
+  });
+
+  const textarea = document.getElementById("cantidad-area") as HTMLTextAreaElement | null;
+
+  textarea?.addEventListener("input", (e: Event) => {
+    const target = e.target as HTMLTextAreaElement;
+    const value = target.value;
+
+    // Solo actuamos si el último caracter es un espacio
+    if (value.endsWith(" ")) {
+      // Dividir en palabras
+      const parts = value.split(" ");
+
+      // Tomar la penúltima palabra (la última está vacía porque termina en espacio)
+      const lastWord = parts[parts.length - 2];
+
+      // Si es un dígito único → lo reemplazamos por 0X
+      if (/^\d$/.test(lastWord)) {
+        parts[parts.length - 2] = "0" + lastWord;
+        target.value = parts.join(" ");
+      }
+    }
+  });
+</script>

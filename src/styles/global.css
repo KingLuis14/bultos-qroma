@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+
+
+
+@layer base {
+    :root {
+        color-scheme: dark;
+    }
+
+
+
+    body {
+        background-color: black;
+        font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            Roboto,
+            Oxygen,
+            Ubuntu,
+            Cantarell,
+            'Open Sans',
+            'Helvetica Neue',
+            sans-serif;
+        font-size: clamp(0.8889rem, 0.8384rem + 0.2155vw, 1rem);
+    }
+
+    label {
+        display: block;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 0.5em;
+        border-color: transparent;
+        background-color: rgb(53, 53, 53);
+    }
+
+    .wrapper {
+        width: min(90%, 1400px);
+        margin-inline: auto;
+    }
+
+    .button {
+        padding: 0.5em 1em;
+        border-radius: 0.2em;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+
+
+        &.disable {
+            background-color: rgba(89, 89, 89, 0.17);
+            border: 1px solid #595959;
+        }
+
+        &.green {
+            background-color: rgba(59, 200, 54, 0.17);
+            border: 1px solid #3bc836;
+        }
+
+        &.red {
+            background-color: rgba(226, 40, 43, 0.17);
+            border: 1px solid #e2282b;
+        }
+    }
+
+    li {
+        list-style: none;
+    }
+
+    img {
+        width: 100%;
+        display: block;
+        object-fit: cover;
+    }
+
+
+    textarea {
+        padding: 0.75rem 0.5rem;
+        resize: none;
+        min-height: 150px;
+        word-spacing: 1.5rem;
+        line-height: 2rem;
+    }
+
+    .title {
+        font-size: clamp(1rem, 0.9432rem + 0.2424vw, 1.125rem);
+    }
+
+    .title-2 {
+        font-size: clamp(1.4238rem, 1.3429rem + 0.3452vw, 1.6018rem);
+    }
+
+    .green {
+        --color-active: rgb(58, 206, 94);
+    }
+
+    .cyan {
+        --color-active: rgb(47, 233, 243);
+    }
+
+    .yellow {
+        --color-active: rgb(223, 171, 42);
+    }
+
+    .orange {
+        --color-active: rgb(226, 64, 19);
+    }
+
+    .blue {
+        --color-active: rgb(18, 93, 213);
+    }
+
+    .fucsia {
+        --color-active: rgb(198, 23, 242);
+    }
+
+    .red {
+        --color-active: rgb(226, 40, 43);
+    }
+
+    .lila {
+        --color-active: rgb(171, 117, 238);
+    }
+
+    .pink {
+        --color-active: rgb(234, 113, 200);
+    }
+
+    .gray {
+        --color-active: rgb(108, 108, 108);
+    }
+}
+
+@layer utilities {
+    .button-style {
+        background-color: color-mix(in srgb, var(--color-active) 17%, transparent);
+        border: 1px solid var(--color-active);
+        width: fit-content;
+        padding: 0.25em 0.75em;
+    }
+}

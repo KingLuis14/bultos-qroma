@@ -1,0 +1,58 @@
+{
+  "4578": [
+    {
+      "producto": "fast esmalte",
+      "tipo": "paq x 4",
+      "paquete": 4,
+      "cantidades": [4, 12, 1, 30],
+      "calc": {
+        "paq": 11,
+        "uni": 3,
+        "total": 47
+      },
+      "bultos": "11 paq x 4 + 3 uni",
+      "done": false
+    },
+    {
+      "producto": "fast mate",
+      "tipo": "paq x 4",
+      "paquete": 4,
+      "cantidades": [4, 12, 1, 30],
+      "calc": {
+        "paq": 11,
+        "uni": 3,
+        "total": 47
+      },
+      "bultos": "11 paq x 4 + 3 uni",
+      "done": false
+    }
+  ],
+  "4960": [
+    {
+      "producto": "fast esmalte",
+      "tipo": "paq x 4",
+      "paquete": 4,
+      "cantidades": [4, 12, 1, 30],
+      "calc": {
+        "paq": 11,
+        "uni": 3,
+        "total": 47
+      },
+      "bultos": "11 paq x 4 + 3 uni",
+      "done": false
+    },
+    {
+      "producto": "fast mate",
+      "tipo": "paq x 4",
+      "paquete": 4,
+      "cantidades": [4, 12, 1, 30],
+      "calc": {
+        "paq": 11,
+        "uni": 3,
+        "total": 47
+      },
+      "bultos": "11 paq x 4 + 3 uni",
+      "done": false
+    }
+  ]
+}
