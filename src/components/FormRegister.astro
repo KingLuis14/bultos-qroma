@@ -1,5 +1,58 @@
+---
+const tipos = {
+  "paq x 4": {
+    value: 4,
+    color: "green",
+  },
+  "paq x 2": {
+    value: 2,
+    color: "green",
+  },
+  "paq x 9": {
+    value: 9,
+    color: "green",
+  },
+  "balde 4GL": {
+    value: 1,
+    color: "green",
+  },
+  "balde 1GL": {
+    value: 1,
+    color: "green",
+  },
+  "caja teknocola": {
+    value: 1,
+    color: "green",
+  },
+  "caja x 12 tintes": {
+    value: 12,
+    color: "green",
+  },
+  "caja temple 25kg": {
+    value: 1,
+    color: "green",
+  },
+  "caja temple 5 x 5kg": {
+    value: 1,
+    color: "green",
+  },
+  "bolsa temple 25kg": {
+    value: 1,
+    color: "green",
+  },
+  "bolsa temple 5 x 5kg": {
+    value: 5,
+    color: "green",
+  },
+  unidades: {
+    value: 1,
+    color: "green",
+  },
+};
+---
+
 <dialog id="formDialog">
-  <form class="grid gap-3">
+  <form class="grid gap-3" id="form-register">
     <!-- Producto -->
     <fieldset>
       <label for="producto">Producto</label>
@@ -9,17 +62,18 @@
     <!-- Tipo -->
     <fieldset id="grupo-tipo">
       <label for="tipo">Tipo</label>
-      <div class="flex gap-4 mt-2.5">
+      <div class="flex gap-4 mt-2.5 items-center">
+        <!-- Tipo select or input -->
         <div id="tipo-contenedor" class="grow">
-          <select id="tipo" name="tipo">
-            <option value="opcion1">Opción 1</option>
-            <option value="opcion2">Opción 2</option>
-            <option value="opcion3">Opción 3</option>
+          <select id="tipoSelect" name="tipoSelect" required>
+            <option value="">Tipo?</option>
+            {Object.entries(tipos).map(([label, { value }]) => <option value={value}>{label}</option>)}
           </select>
 
-          <input type="text" id="tipo" name="tipo" placeholder="Escribe tu tipo" style="display: none;" />
+          <input type="text" id="tipoInput" name="tipoInput" placeholder="Escribe tu tipo" style="display: none;" />
         </div>
 
+        <!-- radio buttons -->
         <div class="flex">
           <label>
             <input type="radio" name="tipo-opcion" value="select" checked />
@@ -29,6 +83,12 @@
             <input type="radio" name="tipo-opcion" value="custom" />
             Custom
           </label>
+        </div>
+
+        <!-- color piker -->
+        <div>
+          <label for="color">Elige un color:</label>
+          <input type="color" id="color" name="color" value="#ffffff" class="p-0" />
         </div>
       </div>
     </fieldset>
@@ -42,7 +102,8 @@
     <!-- Cantidad -->
     <fieldset>
       <label for="cantidad-area">Cantidad</label>
-      <textarea id="cantidad-area" inputmode="numeric"  name="cantidad" rows="4" class="mt-2.5 w-full"></textarea>
+      <textarea id="cantidad-area" inputmode="numeric" name="cantidad" rows="4" class="mt-2.5 w-full" required
+      ></textarea>
     </fieldset>
 
     <!-- Botón -->
@@ -74,6 +135,7 @@
 </style>
 
 <script>
+  const form = document.getElementById("form-register") as HTMLFormElement;
   const contenedor = document.getElementById("tipo-contenedor");
   const contenedorTipo = document.getElementById("grupo-tipo");
 
@@ -86,10 +148,16 @@
     if (target?.name === "tipo-opcion") {
       if (target.value === "select") {
         select.style.display = "block";
+        select.required = true;
+
         input.style.display = "none";
+        input.required = false;
       } else {
-        select.style.display = "none";
         input.style.display = "block";
+        input.required = true;
+
+        select.style.display = "none";
+        select.required = false;
       }
     }
   });
@@ -100,19 +168,67 @@
     const target = e.target as HTMLTextAreaElement;
     const value = target.value;
 
-    // Solo actuamos si el último caracter es un espacio
     if (value.endsWith(" ")) {
-      // Dividir en palabras
       const parts = value.split(" ");
-
-      // Tomar la penúltima palabra (la última está vacía porque termina en espacio)
       const lastWord = parts[parts.length - 2];
 
-      // Si es un dígito único → lo reemplazamos por 0X
       if (/^\d$/.test(lastWord)) {
         parts[parts.length - 2] = "0" + lastWord;
         target.value = parts.join(" ");
       }
     }
   });
+
+  const inputPaq = document.getElementById("paq") as HTMLInputElement;
+
+  select.addEventListener("change", () => {
+    if (inputPaq) {
+      inputPaq.value = select.value; // coloca el value del option en el input
+    }
+  });
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const producto = (document.getElementById("producto") as HTMLInputElement).value.trim();
+    const paquete = +(document.getElementById("paq") as HTMLInputElement).value;
+    const cantidadRaw = (document.getElementById("cantidad-area") as HTMLTextAreaElement).value.trim();
+
+    const tipoOpcion = document.querySelector<HTMLInputElement>('input[name="tipo-opcion"]:checked')?.value;
+    const tipo = (
+      tipoOpcion === "select" ? document.getElementById("tipoSelect") : document.getElementById("tipoInput")
+    ) as HTMLInputElement | HTMLSelectElement;
+
+    const cantidades = cantidadRaw
+      .split(/[\s,]+/)
+      .map(Number)
+      .filter((n) => !isNaN(n));
+
+    const { paq, uni, total, bultos } = calcularPaquetes(paquete, cantidades);
+
+    const dataForm: Product = {
+      producto,
+      done: false,
+      paquete,
+      tipo: tipo.value.trim(),
+      cantidades: cantidadRaw,
+      calc: { paq, uni, total },
+      bultos,
+    };
+
+    console.log({ dataForm });
+  });
+
+  function calcularPaquetes(paquete: number, cantidades: number[]) {
+    const total = cantidades.reduce((a, b) => a + b, 0);
+    const paq = Math.floor(total / paquete);
+    const uni = total % paquete;
+
+    let bultos = "";
+    if (paq && uni) bultos = `${paq} paq x ${paquete} + ${uni} uni`;
+    else if (paq) bultos = `${paq} paq x ${paquete}`;
+    else if (uni) bultos = `${uni} uni`;
+
+    return { paq, uni, total, bultos };
+  }
 </script>
