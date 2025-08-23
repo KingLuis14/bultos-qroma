@@ -166,9 +166,31 @@ function togglePopup(item: Product, e: MouseEvent) {
 }
 
 function deleteItem(item: Product) {
-  alert("Eliminar: " + item.producto);
-  popupItem.value = null;
+  if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+  const guiaCodigo = localStorage.getItem("guiaActiva");
+  if (!guiaCodigo) return;
+
+  const raw = localStorage.getItem("data");
+  const data: Data = raw ? JSON.parse(raw) : {};
+
+  const products = data[guiaCodigo] ?? [];
+
+  // Filtrar eliminando solo el producto que coincida en nombre y tipo
+  const newProducts = products.filter(
+    (p) => !(p.producto === item.producto && p.tipo === item.tipo)
+  );
+
+  const newData: Data = {
+    ...data,
+    [guiaCodigo]: newProducts,
+  };
+
+  localStorage.setItem("data", JSON.stringify(newData));
+  window.dispatchEvent(new Event("register-product"));
+
+  popupItem.value = null; // cerrar popup
 }
+
 
 function editItem(item: Product) {
   // Abrir el dialog
