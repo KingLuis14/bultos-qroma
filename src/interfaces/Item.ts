@@ -11,6 +11,7 @@ interface Product {
   tipo: string;
   paquete: number;
   cantidades: string;
+  items: number,
   calc: Calc;
   bultos: string;
   done: boolean;

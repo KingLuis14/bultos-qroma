@@ -204,31 +204,70 @@ const tipos = {
       .map(Number)
       .filter((n) => !isNaN(n));
 
-    const { paq, uni, total, bultos } = calcularPaquetes(paquete, cantidades);
+    const tipoTexto = tipo instanceof HTMLSelectElement ? (tipo.selectedOptions[0]?.text ?? "") : (tipo.value ?? "");
+
+    const { paq, uni, total, bultos } = calcularPaquetes(paquete, cantidades, tipoTexto);
 
     const dataForm: Product = {
       producto,
       done: false,
       paquete,
-      tipo: tipo.value.trim(),
+      items: cantidades.length,
+      tipo: tipoTexto,
       cantidades: cantidadRaw,
       calc: { paq, uni, total },
       bultos,
     };
 
+    const guiaActiva = localStorage.getItem("guiaActiva")!;
+    saveToLocalStorage(guiaActiva, dataForm);
     console.log({ dataForm });
   });
 
-  function calcularPaquetes(paquete: number, cantidades: number[]) {
+  function calcularPaquetes(paquete: number, cantidades: number[], tipo: string) {
     const total = cantidades.reduce((a, b) => a + b, 0);
     const paq = Math.floor(total / paquete);
     const uni = total % paquete;
 
     let bultos = "";
-    if (paq && uni) bultos = `${paq} paq x ${paquete} + ${uni} uni`;
-    else if (paq) bultos = `${paq} paq x ${paquete}`;
+    if (paq && uni) bultos = `${paq} ${tipo} + ${uni} uni`;
+    else if (paq) bultos = `${paq} ${tipo}`;
     else if (uni) bultos = `${uni} uni`;
 
     return { paq, uni, total, bultos };
+  }
+
+  function saveToLocalStorage(key: string, product: Product) {
+    const raw = localStorage.getItem("data");
+    const data: Data = raw ? JSON.parse(raw) : {};
+
+    const products = data[key] ?? [];
+
+    // Verificar si ya existe el producto con el mismo nombre y tipo
+    const index = products.findIndex((p) => p.producto === product.producto && p.tipo === product.tipo);
+
+    let newProducts: Product[];
+    if (index !== -1) {
+      // 🔄 Actualizar inmutablemente
+      newProducts = products.map((p, i) => (i === index ? { ...product } : p));
+    } else {
+      // ➕ Agregar como nuevo
+      newProducts = [...products, { ...product }];
+    }
+
+    // Construir el nuevo objeto de data
+    const newData: Data = {
+      ...data,
+      [key]: newProducts,
+    };
+
+    // Guardar en localStorage
+    localStorage.setItem("data", JSON.stringify(newData));
+
+    // Emitir evento global para refrescar
+    window.dispatchEvent(new Event("register-product"));
+
+    // Cerrar el diálogo si existe
+    (document.getElementById("formDialog") as HTMLDialogElement)?.close();
   }
 </script>
