@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { navigate } from "astro:transitions/client";
 import { ref, onMounted } from "vue";
 
 const keys = ref<string[]>([]);
@@ -15,10 +14,20 @@ onMounted(() => {
 function setGuia(key: string) {
   const input = document.getElementById("guia") as HTMLInputElement | null;
   if (input) {
-    input.value = key; // 👈 mete el key directamente en el input de Astro
+    input.value = key;
   }
   localStorage.setItem("guiaActiva", key);
-  //   navigate('/new-guia/')
+}
+
+function deleteGuia(key: string) {
+  const raw = localStorage.getItem("data");
+  if (!raw) return;
+
+  const data = JSON.parse(raw);
+  delete data[key];
+  localStorage.setItem("data", JSON.stringify(data));
+
+  keys.value = Object.keys(data); // refresca la lista
 }
 </script>
 
@@ -31,10 +40,16 @@ function setGuia(key: string) {
     </div>
 
     <ul v-else>
-      <li v-for="key in keys" :key="key">
-        <a :href="`/new-guia/`" class="text-blue-600 hover:underline p-3 block" @click="setGuia(key)">
+      <li v-for="key in keys" :key="key" class="flex justify-between items-center  py-2">
+        <!-- enlace de la guía -->
+        <a :href="`/new-guia/`" class="text-[#9a9a9a] font-semibold" @click="setGuia(key)">
           {{ key }}
         </a>
+
+        <!-- botón eliminar -->
+        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" type="button" @click="deleteGuia(key)">
+          Eliminar
+        </button>
       </li>
     </ul>
   </div>

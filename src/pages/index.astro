@@ -3,69 +3,30 @@ import FormRegister from "../components/FormRegister.astro";
 import ListProductsSaved from "../components/ListProductsSaved.vue";
 import Product from "../components/Product.vue";
 import BaseLayout from "../layout/BaseLayout.astro";
-
 ---
 
 <BaseLayout title="inicio" description="digita y calcula tus guias">
-  <br>
-  <a href="/new-guia/" class="button-style green">Nueva guia</a>
+  <br />
+  <a href="/new-guia/" id="btn-new-guia" class="button-style green">Nueva guia</a>
   <br />
   <br />
   <h1 class="text-4xl">Calcula los bultos</h1>
-  <br>
+  <br />
   <ListProductsSaved client:only="vue" />
 </BaseLayout>
 
-
 <script>
-  document.addEventListener('astro:page-load', () => {
-    const form = document.getElementById('formPrincipal') as HTMLFormElement
-    const dialog = document.getElementById('formDialog') as HTMLDialogElement
-    const input = document.getElementById('guia') as HTMLInputElement
-    const valorGuardado = localStorage.getItem('guiaActiva')
+  document.addEventListener("astro:page-load", () => {
+    const $newGuia = document.getElementById("btn-new-guia") as HTMLAnchorElement;
 
-    const nav = document.querySelector('nav[aria-label="Opciones de filtro"]')!
+    $newGuia.addEventListener("click", () => setGuia(""));
 
-    const eventosVista: Record<string, string> = {
-      'btn-global': 'localStorageUpdate',
-      'btn-tipo': 'vista:tipo',
-      'btn-bulto': 'vista:bulto',
-    }
-
-    nav?.addEventListener('click', (e) => {
-      const target = (e.target as HTMLElement).closest('button')
-      if (!target || !target.id || !(target.id in eventosVista)) return
-
-      // Quitar clase .green a todos los botones hijos
-      nav
-        .querySelectorAll('button')
-        .forEach((btn) => btn.classList.remove('green'))
-
-      // Agregar clase .green al botón activo
-      target.classList.add('green')
-
-      // Lanzar el evento correspondiente
-      const evento = eventosVista[target.id]
-      
-      window.dispatchEvent(new CustomEvent(evento))
-    })
-
-    if (input && valorGuardado) {
-      input.value = valorGuardado
-    }
-
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault()
-
-      if (form.checkValidity()) {
-        dialog.showModal()
-        localStorage.setItem(
-          'guiaActiva',
-          document.querySelector<HTMLInputElement>('#guia')?.value || '',
-        )
-      } else {
-        form.reportValidity()
+    function setGuia(key: string) {
+      const input = document.getElementById("guia") as HTMLInputElement | null;
+      if (input) {
+        input.value = key;
       }
-    })
-  })
+      localStorage.setItem("guiaActiva", key);
+    }
+  });
 </script>

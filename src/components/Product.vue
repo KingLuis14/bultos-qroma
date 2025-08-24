@@ -1,36 +1,41 @@
 <template>
   <div v-if="Object.keys(grouped).length > 0">
-    <div v-for="(products, tipo) in grouped" :key="tipo" class="mb-6">
-      <h2 class="text-2xl">{{ tipo }}</h2>
-      <br />
-      <div class="bg-gray-900 rounded-md py-4">
+    <div v-for="(products, tipo) in grouped" :key="tipo" class="mb-2" >
+      <h2 class="text-2xl font-semibold first-letter:uppercase">{{ tipo }}</h2>
+      <div class="flex gap-2 text-[#9a9a9a] mt-2 font-medium">
+          <span class="col-start-2 "> {{ items(tipo) }} items </span>
+          <span>• {{ bultos(tipo) }}</span>
+          <span>• {{ total(tipo) }}</span>
+        </div>
+      <div class="flex flex-col gap-3 py-4">
         <!-- Producto -->
         <div
           v-for="(item, i) in products"
           :key="i"
           :data-id="item.producto + ' ' + item.tipo"
-          class="grid grid-cols-[min-content_1fr_max-content_max-content] [&>*]:p-3 items-center"
+          class="bg-[#1D1D1F] rounded-md grid grid-cols-[min-content_1fr_max-content] gap-4 items-center px-2 py-4"
         >
-          <div>
-            <input type="checkbox" v-model="item.done" class="w-4 aspect-square" name="active" />
+          <div class="pr-0">
+            <input
+              type="checkbox"
+              v-model="item.done"
+              @change="toggleDone(item)"
+              class="w-5 aspect-square accent-green-400"
+            />
           </div>
-          <div class="flex flex-col gap-1.5">
-            <span>{{ item.producto.toUpperCase() }}</span>
-            <div class="flex gap-6">
-              <span>{{ item.bultos }}</span>
-              <span>{{ item.calc.total }}</span>
+          <div class="flex flex-col gap-1.5 font-medium">
+            <span :class="{ 'line-through': item.done }" class="uppercase">
+              {{ item.producto }}
+            </span>
+            <div class="flex gap-2 text-[#9a9a9a]">
+              <span>{{ item.items }} items</span>
+              <span>• {{ item.bultos }}</span>
+              <span>• {{ item.calc.total }}</span>
             </div>
           </div>
           <button class="popup-btn" @click.stop="togglePopup(item, $event)">
             <slot name="svgContent"></slot>
           </button>
-        </div>
-        <br />
-        <hr />
-        <div class="grid grid-cols-[min-content_1fr_max-content_max-content] [&>*]:p-3">
-          <span class="col-start-2">Items : {{ items(tipo) }} </span>
-          <span>{{ bultos(tipo) }}</span>
-          <span>{{ total(tipo) }}</span>
         </div>
       </div>
     </div>
@@ -38,7 +43,7 @@
     <div class="flex gap-4 justify-between text-2xl">
       <span>Items: {{ itemsGenerales }}</span>
       <span>Total: {{ totalGeneral }}</span>
-      </div>
+    </div>
     <br />
   </div>
 
@@ -77,7 +82,6 @@ const renderData = () => {
   }
 };
 
-// cargar desde localStorage
 onMounted(() => {
   renderData();
 
@@ -91,7 +95,6 @@ onMounted(() => {
   });
 });
 
-// agrupamos por tipo (paq x 4, paq x 2, etc.)
 const grouped = computed(() => {
   const result: Data = {};
   data.value.forEach((p) => {
@@ -176,9 +179,7 @@ function deleteItem(item: Product) {
   const products = data[guiaCodigo] ?? [];
 
   // Filtrar eliminando solo el producto que coincida en nombre y tipo
-  const newProducts = products.filter(
-    (p) => !(p.producto === item.producto && p.tipo === item.tipo)
-  );
+  const newProducts = products.filter((p) => !(p.producto === item.producto && p.tipo === item.tipo));
 
   const newData: Data = {
     ...data,
@@ -191,9 +192,7 @@ function deleteItem(item: Product) {
   popupItem.value = null; // cerrar popup
 }
 
-
 function editItem(item: Product) {
-  // Abrir el dialog
   const dialog = document.getElementById("formDialog") as HTMLDialogElement;
   dialog.showModal();
 
@@ -208,6 +207,7 @@ function editItem(item: Product) {
 
   // Revisar si el tipo existe en el select
   const option = Array.from(select.options).find((opt) => opt.text === item.tipo);
+
   if (option) {
     // activar modo select
     document.querySelector<HTMLInputElement>('input[value="select"]')!.checked = true;
@@ -230,9 +230,24 @@ function editItem(item: Product) {
     input.value = item.tipo;
   }
 
-  // (Opcional) si guardaste color en Product, asignarlo aquí
-  // (document.getElementById("color") as HTMLInputElement).value = item.color ?? "#ffffff";
-
   popupItem.value = null; // cerrar popup
+}
+
+function toggleDone(item: Product) {
+  const guiaCodigo = localStorage.getItem("guiaActiva");
+  if (!guiaCodigo) return;
+
+  const raw = localStorage.getItem("data");
+  const data: Data = raw ? JSON.parse(raw) : {};
+
+  const products = data[guiaCodigo] ?? [];
+
+  // buscar el producto y actualizar el campo done
+  const updated = products.map((p) =>
+    p.producto === item.producto && p.tipo === item.tipo ? { ...p, done: item.done } : p
+  );
+
+  const newData: Data = { ...data, [guiaCodigo]: updated };
+  localStorage.setItem("data", JSON.stringify(newData));
 }
 </script>

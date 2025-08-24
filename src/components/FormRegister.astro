@@ -44,6 +44,11 @@ const tipos = {
     value: 5,
     color: "green",
   },
+
+  "caja x 4": {
+    value: 4,
+    color: "green",
+  },
   unidades: {
     value: 1,
     color: "green",
@@ -83,12 +88,6 @@ const tipos = {
             <input type="radio" name="tipo-opcion" value="custom" />
             Custom
           </label>
-        </div>
-
-        <!-- color piker -->
-        <div>
-          <label for="color">Elige un color:</label>
-          <input type="color" id="color" name="color" value="#ffffff" class="p-0" />
         </div>
       </div>
     </fieldset>
@@ -135,139 +134,146 @@ const tipos = {
 </style>
 
 <script>
-  const form = document.getElementById("form-register") as HTMLFormElement;
-  const contenedor = document.getElementById("tipo-contenedor");
-  const contenedorTipo = document.getElementById("grupo-tipo");
+  document.addEventListener("astro:page-load", () => {
+    const form = document.getElementById("form-register") as HTMLFormElement;
+    const contenedor = document.getElementById("tipo-contenedor");
+    const contenedorTipo = document.getElementById("grupo-tipo");
 
-  const select = contenedor?.querySelector("select") as HTMLSelectElement;
-  const input = contenedor?.querySelector('input[type="text"]') as HTMLInputElement;
+    const select = contenedor?.querySelector("select") as HTMLSelectElement;
+    const input = contenedor?.querySelector('input[type="text"]') as HTMLInputElement;
+    const inputPaq = document.getElementById("paq") as HTMLInputElement;
+    const textarea = document.getElementById("cantidad-area") as HTMLTextAreaElement | null;
 
-  contenedorTipo?.addEventListener("click", (e: MouseEvent) => {
-    const target = e.target as HTMLInputElement;
+    contenedorTipo?.addEventListener("click", (e: MouseEvent) => {
+      const target = e.target as HTMLInputElement;
 
-    if (target?.name === "tipo-opcion") {
-      if (target.value === "select") {
-        select.style.display = "block";
-        select.required = true;
+      if (target?.name === "tipo-opcion") {
+        if (target.value === "select") {
+          select.style.display = "block";
+          select.required = true;
 
-        input.style.display = "none";
-        input.required = false;
+          input.style.display = "none";
+          input.required = false;
+        } else {
+          input.style.display = "block";
+          input.required = true;
+
+          select.style.display = "none";
+          select.required = false;
+        }
+      }
+    });
+
+    textarea?.addEventListener("input", (e: Event) => {
+      const target = e.target as HTMLTextAreaElement;
+      const value = target.value;
+
+      if (value.endsWith(" ")) {
+        const parts = value.split(" ");
+        const lastWord = parts[parts.length - 2];
+
+        if (/^\d$/.test(lastWord)) {
+          parts[parts.length - 2] = "0" + lastWord;
+          target.value = parts.join(" ");
+        }
+      }
+    });
+
+    select?.addEventListener("change", () => {
+      if (inputPaq) {
+        inputPaq.value = select.value; // coloca el value del option en el input
+      }
+    });
+
+    form?.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const producto = (document.getElementById("producto") as HTMLInputElement).value.trim();
+      const paquete = +(document.getElementById("paq") as HTMLInputElement).value;
+      const cantidadRaw = (document.getElementById("cantidad-area") as HTMLTextAreaElement).value.trim();
+
+      const tipoOpcion = document.querySelector<HTMLInputElement>('input[name="tipo-opcion"]:checked')?.value;
+      const tipo = (
+        tipoOpcion === "select" ? document.getElementById("tipoSelect") : document.getElementById("tipoInput")
+      ) as HTMLInputElement | HTMLSelectElement;
+
+      const cantidades = cantidadRaw
+        .split(/[\s,]+/)
+        .map(Number)
+        .filter((n) => !isNaN(n));
+
+      const tipoTexto = tipo instanceof HTMLSelectElement ? (tipo.selectedOptions[0]?.text ?? "") : (tipo.value ?? "");
+
+      const { paq, uni, total, bultos } = calcularPaquetes(paquete, cantidades, tipoTexto);
+
+      const dataForm: Product = {
+        producto,
+        done: false,
+        paquete,
+        items: cantidades.length,
+        tipo: tipoTexto,
+        cantidades: cantidadRaw,
+        calc: { paq, uni, total },
+        bultos,
+      };
+
+      const guiaActiva = localStorage.getItem("guiaActiva")!;
+      saveToLocalStorage(guiaActiva, dataForm);
+      resetForm();
+    });
+
+    function resetForm() {
+      (document.getElementById("producto") as HTMLInputElement).value = "";
+      (document.getElementById("paq") as HTMLInputElement).value = "";
+      (document.getElementById("cantidad-area") as HTMLTextAreaElement).value = "";
+
+      (document.getElementById("tipoInput") as HTMLInputElement).value = "";
+      (document.getElementById("tipoSelect") as HTMLSelectElement).selectedIndex = 0;
+
+      // marcar por defecto el radio con value="select"
+      const defaultRadio = document.querySelector<HTMLInputElement>('input[name="tipo-opcion"][value="select"]');
+      if (defaultRadio) defaultRadio.checked = true;
+    }
+
+    function calcularPaquetes(paquete: number, cantidades: number[], tipo: string) {
+      const total = cantidades.reduce((a, b) => a + b, 0);
+      const paq = Math.floor(total / paquete);
+      const uni = total % paquete;
+
+      let bultos = "";
+      if (paq && uni) bultos = `${paq} ${tipo} + ${uni} uni`;
+      else if (paq) bultos = `${paq} ${tipo}`;
+      else if (uni) bultos = `${uni} uni`;
+
+      return { paq, uni, total, bultos };
+    }
+
+    function saveToLocalStorage(key: string, product: Product) {
+      const raw = localStorage.getItem("data");
+      const data: Data = raw ? JSON.parse(raw) : {};
+
+      const products = data[key] ?? [];
+
+      const index = products.findIndex((p) => p.producto === product.producto && p.tipo === product.tipo);
+
+      let newProducts: Product[];
+      if (index !== -1) {
+        // 🔄 Actualizar
+        newProducts = products.map((p, i) => (i === index ? { ...product } : p));
       } else {
-        input.style.display = "block";
-        input.required = true;
-
-        select.style.display = "none";
-        select.required = false;
+        // ➕ Agregar
+        newProducts = [...products, { ...product }];
       }
+
+      // Construir el nuevo objeto de data
+      const newData: Data = {
+        ...data,
+        [key]: newProducts,
+      };
+
+      localStorage.setItem("data", JSON.stringify(newData));
+      window.dispatchEvent(new Event("register-product"));
+      (document.getElementById("formDialog") as HTMLDialogElement)?.close();
     }
   });
-
-  const textarea = document.getElementById("cantidad-area") as HTMLTextAreaElement | null;
-
-  textarea?.addEventListener("input", (e: Event) => {
-    const target = e.target as HTMLTextAreaElement;
-    const value = target.value;
-
-    if (value.endsWith(" ")) {
-      const parts = value.split(" ");
-      const lastWord = parts[parts.length - 2];
-
-      if (/^\d$/.test(lastWord)) {
-        parts[parts.length - 2] = "0" + lastWord;
-        target.value = parts.join(" ");
-      }
-    }
-  });
-
-  const inputPaq = document.getElementById("paq") as HTMLInputElement;
-
-  select.addEventListener("change", () => {
-    if (inputPaq) {
-      inputPaq.value = select.value; // coloca el value del option en el input
-    }
-  });
-
-  form?.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const producto = (document.getElementById("producto") as HTMLInputElement).value.trim();
-    const paquete = +(document.getElementById("paq") as HTMLInputElement).value;
-    const cantidadRaw = (document.getElementById("cantidad-area") as HTMLTextAreaElement).value.trim();
-
-    const tipoOpcion = document.querySelector<HTMLInputElement>('input[name="tipo-opcion"]:checked')?.value;
-    const tipo = (
-      tipoOpcion === "select" ? document.getElementById("tipoSelect") : document.getElementById("tipoInput")
-    ) as HTMLInputElement | HTMLSelectElement;
-
-    const cantidades = cantidadRaw
-      .split(/[\s,]+/)
-      .map(Number)
-      .filter((n) => !isNaN(n));
-
-    const tipoTexto = tipo instanceof HTMLSelectElement ? (tipo.selectedOptions[0]?.text ?? "") : (tipo.value ?? "");
-
-    const { paq, uni, total, bultos } = calcularPaquetes(paquete, cantidades, tipoTexto);
-
-    const dataForm: Product = {
-      producto,
-      done: false,
-      paquete,
-      items: cantidades.length,
-      tipo: tipoTexto,
-      cantidades: cantidadRaw,
-      calc: { paq, uni, total },
-      bultos,
-    };
-
-    const guiaActiva = localStorage.getItem("guiaActiva")!;
-    saveToLocalStorage(guiaActiva, dataForm);
-    console.log({ dataForm });
-  });
-
-  function calcularPaquetes(paquete: number, cantidades: number[], tipo: string) {
-    const total = cantidades.reduce((a, b) => a + b, 0);
-    const paq = Math.floor(total / paquete);
-    const uni = total % paquete;
-
-    let bultos = "";
-    if (paq && uni) bultos = `${paq} ${tipo} + ${uni} uni`;
-    else if (paq) bultos = `${paq} ${tipo}`;
-    else if (uni) bultos = `${uni} uni`;
-
-    return { paq, uni, total, bultos };
-  }
-
-  function saveToLocalStorage(key: string, product: Product) {
-    const raw = localStorage.getItem("data");
-    const data: Data = raw ? JSON.parse(raw) : {};
-
-    const products = data[key] ?? [];
-
-    // Verificar si ya existe el producto con el mismo nombre y tipo
-    const index = products.findIndex((p) => p.producto === product.producto && p.tipo === product.tipo);
-
-    let newProducts: Product[];
-    if (index !== -1) {
-      // 🔄 Actualizar inmutablemente
-      newProducts = products.map((p, i) => (i === index ? { ...product } : p));
-    } else {
-      // ➕ Agregar como nuevo
-      newProducts = [...products, { ...product }];
-    }
-
-    // Construir el nuevo objeto de data
-    const newData: Data = {
-      ...data,
-      [key]: newProducts,
-    };
-
-    // Guardar en localStorage
-    localStorage.setItem("data", JSON.stringify(newData));
-
-    // Emitir evento global para refrescar
-    window.dispatchEvent(new Event("register-product"));
-
-    // Cerrar el diálogo si existe
-    (document.getElementById("formDialog") as HTMLDialogElement)?.close();
-  }
 </script>
