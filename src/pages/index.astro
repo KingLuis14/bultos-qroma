@@ -19,7 +19,7 @@ import BaseLayout from "../layout/BaseLayout.astro";
   document.addEventListener("astro:page-load", () => {
     const $newGuia = document.getElementById("btn-new-guia") as HTMLAnchorElement;
 
-    $newGuia.addEventListener("click", () => setGuia(""));
+    $newGuia?.addEventListener("click", () => setGuia(""));
 
     function setGuia(key: string) {
       const input = document.getElementById("guia") as HTMLInputElement | null;

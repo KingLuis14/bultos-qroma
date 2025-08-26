@@ -1,43 +1,65 @@
 <template>
   <div v-if="Object.keys(grouped).length > 0">
-    <div v-for="(products, tipo) in grouped" :key="tipo" class="mb-2" >
-      <h2 class="text-2xl font-semibold first-letter:uppercase">{{ tipo }}</h2>
-      <div class="flex gap-2 text-[#9a9a9a] mt-2 font-medium">
-          <span class="col-start-2 "> {{ items(tipo) }} items </span>
-          <span>• {{ bultos(tipo) }}</span>
-          <span>• {{ total(tipo) }}</span>
-        </div>
-      <div class="flex flex-col gap-3 py-4">
-        <!-- Producto -->
-        <div
-          v-for="(item, i) in products"
-          :key="i"
-          :data-id="item.producto + ' ' + item.tipo"
-          class="bg-[#1D1D1F] rounded-md grid grid-cols-[min-content_1fr_max-content] gap-4 items-center px-2 py-4"
-        >
-          <div class="pr-0">
-            <input
-              type="checkbox"
-              v-model="item.done"
-              @change="toggleDone(item)"
-              class="w-5 aspect-square accent-green-400"
-            />
-          </div>
-          <div class="flex flex-col gap-1.5 font-medium">
-            <span :class="{ 'line-through': item.done }" class="uppercase">
-              {{ item.producto }}
-            </span>
-            <div class="flex gap-2 text-[#9a9a9a]">
-              <span>{{ item.items }} items</span>
-              <span>• {{ item.bultos }}</span>
-              <span>• {{ item.calc.total }}</span>
+    <div v-for="(products, tipo) in grouped" :key="tipo" class="mb-3">
+      <section>
+        <header class="acordeon-header flex justify-between items-baseline">
+          <div>
+            <h2 class="text-2xl font-semibold first-letter:uppercase">{{ tipo }}</h2>
+            <div class="flex gap-2 text-[#cbcbcb] mt-2.5 font-medium">
+              <span class="item-result cyan"> {{ items(tipo) }} items </span>
+              <span class="item-result green">{{ bultos(tipo) }}</span>
+              <span class="item-result yellow">{{ total(tipo) }}</span>
             </div>
           </div>
-          <button class="popup-btn" @click.stop="togglePopup(item, $event)">
-            <slot name="svgContent"></slot>
+          <button class="">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="acordeon-icono pointer-events-none"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path fill="currentColor" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6z" />
+            </svg>
           </button>
+        </header>
+
+        <div class="acordeon-contenido isOpen">
+          <div class="overflow-hidden">
+            <div class="flex flex-col gap-3 py-4">
+              <!-- Producto -->
+              <div
+                v-for="(item, i) in products"
+                :key="i"
+                :data-id="item.producto + ' ' + item.tipo"
+                class="bg-[#1D1D1F] rounded-md grid grid-cols-[min-content_1fr_max-content] gap-4 items-center px-2 py-4"
+              >
+                <div class="pr-0">
+                  <input
+                    type="checkbox"
+                    v-model="item.done"
+                    @change="toggleDone(item)"
+                    class="w-5 aspect-square accent-green-400"
+                  />
+                </div>
+                <div class="flex flex-col gap-1.5 font-medium">
+                  <span :class="{ 'line-through': item.done }" class="uppercase">
+                    {{ item.producto }}
+                  </span>
+                  <div class="flex gap-2 text-[#9a9a9a]">
+                    <span>{{ item.items }} items</span>
+                    <span>• {{ item.bultos }}</span>
+                    <span>• {{ item.calc.total }}</span>
+                  </div>
+                </div>
+                <button class="popup-btn" @click.stop="togglePopup(item, $event)">
+                  <slot name="svgContent"></slot>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
     <br />
     <div class="flex gap-4 justify-between text-2xl">
@@ -65,6 +87,28 @@
   </div>
 </template>
 
+<style scoped>
+.acordeon-contenido {
+  display: grid;
+  will-change: grid-template-rows;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s ease-out;
+
+  &.isOpen {
+    grid-template-rows: 1fr;
+  }
+}
+
+.acordeon-icono {
+  transform: rotate(0deg);
+  transition: transform 0.2s linear;
+
+  &.rotate {
+    transform: rotate(180deg);
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
@@ -87,10 +131,21 @@ onMounted(() => {
 
   window.addEventListener("register-product", renderData);
 
-  document.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement;
-    if (!target.closest(".popup-btn") && !target.closest(".popup-menu")) {
+  document.body.addEventListener("click", (e) => {
+    const el = e.target as HTMLElement | null;
+    if (!el) return;
+
+    // cerrar popup si clic fuera
+    if (!el.closest(".popup-btn, .popup-menu")) {
       popupItem.value = null;
+    }
+
+    // acordeón
+    const header = el.closest<HTMLElement>(".acordeon-header");
+    if (header) {
+      const contenido = header.nextElementSibling as HTMLElement | null;
+      contenido?.classList.toggle("isOpen");
+      header.querySelector(".acordeon-icono")?.classList.toggle("rotate");
     }
   });
 });
