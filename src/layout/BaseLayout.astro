@@ -1,12 +1,11 @@
 ---
-
-import '../styles/global.css' ;
+import "../styles/global.css";
 interface Props {
-  title: string
-  description: string
+  title: string;
+  description: string;
 }
-import { ClientRouter } from 'astro:transitions'
-const { title, description } = Astro.props
+import { ClientRouter } from "astro:transitions";
+const { title, description } = Astro.props;
 ---
 
 <!doctype html>
@@ -17,6 +16,10 @@ const { title, description } = Astro.props
     <title>{title}</title>
     <meta name="description" content={description} />
     <ClientRouter />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
   </head>
   <body>
     <main class="wrapper">
@@ -24,4 +27,3 @@ const { title, description } = Astro.props
     </main>
   </body>
 </html>
-

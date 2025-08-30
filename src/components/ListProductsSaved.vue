@@ -20,6 +20,8 @@ function setGuia(key: string) {
 }
 
 function deleteGuia(key: string) {
+
+  if (!confirm("¿Seguro que deseas eliminar esta guia?")) return;
   const raw = localStorage.getItem("data");
   if (!raw) return;
 
@@ -33,7 +35,7 @@ function deleteGuia(key: string) {
 
 <template>
   <div>
-    <h2 class="text-2xl">Lista de Guías</h2>
+    <h2 class="text-2xl">Listado de Guías</h2>
 
     <div v-if="keys.length === 0">
       <p class="text-gray-500">No hay guías guardadas.</p>
@@ -47,7 +49,7 @@ function deleteGuia(key: string) {
         </a>
 
         <!-- botón eliminar -->
-        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" type="button" @click="deleteGuia(key)">
+        <button class="button-style red" type="button" @click="deleteGuia(key)">
           Eliminar
         </button>
       </li>

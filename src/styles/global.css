@@ -11,8 +11,8 @@
 
 
     body {
-        background-color: #0D0C0F;
-        font-family:
+        background-color: #0a0f15;
+        /* font-family:
             system-ui,
             -apple-system,
             BlinkMacSystemFont,
@@ -23,7 +23,7 @@
             Cantarell,
             'Open Sans',
             'Helvetica Neue',
-            sans-serif;
+            sans-serif; */
         font-size: clamp(0.8889rem, 0.8384rem + 0.2155vw, 1rem);
     }
 
@@ -139,21 +139,24 @@
 
 @layer utilities {
     .button-style {
-        background-color: color-mix(in srgb, var(--color-active) 17%, transparent);
+        background-color: rgb(from var(--color-active) r g b / 17%);
         border: 1px solid var(--color-active);
         width: fit-content;
+        border-radius: .25rem;
         padding: 0.25em 0.75em;
+        box-shadow: 0 5px 15px rgb(from var(--color-active) r g b / 30%);
     }
 
-    .item-result{
-         background-color: color-mix(in srgb, var(--color-active) 17%, transparent);
+    .item-result {
+        background-color: rgb(from var(--color-active) r g b / 17%);
         border: 1px solid var(--color-active);
         width: fit-content;
         border-radius: 100vh;
         padding: 0.1em 0.65em;
+         box-shadow: 0 5px 15px rgb(from var(--color-active) r g b / 15%);
     }
 }
 
-@theme {
-    /* --color-qroma-100 : rgb(108, 108, 108); */
+@theme{
+    --default-font-family : "Rubik", sans-serif;
 }
