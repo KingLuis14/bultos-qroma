@@ -164,17 +164,17 @@ const tipos = {
       }
     });
 
-    textarea?.addEventListener("input", (e: Event) => {
-      const target = e.target as HTMLTextAreaElement;
-      const value = target.value;
+    textarea?.addEventListener("input", ({ target }) => {
+      const input = target as HTMLTextAreaElement;
+      const { value } = input;
 
       if (value.endsWith(" ")) {
-        const parts = value.split(" ");
-        const lastWord = parts[parts.length - 2];
+        const words = value.split(" ");
+        const lastWord = words.at(-2);
 
-        if (/^\d$/.test(lastWord)) {
-          parts[parts.length - 2] = "0" + lastWord;
-          target.value = parts.join(" ");
+        if (/^\d$/.test(lastWord ?? "")) {
+          words[words.length - 2] = "0" + lastWord;
+          input.value = words.join(" ");
         }
       }
     });
@@ -185,6 +185,20 @@ const tipos = {
       }
     });
 
+    function getTipoOptions(): HTMLInputElement | HTMLSelectElement | null {
+      const opcion = document.querySelector<HTMLInputElement>('input[name="tipo-opcion"]:checked')?.value;
+
+      if (opcion === "select") {
+        return document.getElementById("tipoSelect") as HTMLSelectElement;
+      }
+      return document.getElementById("tipoInput") as HTMLInputElement;
+    }
+
+    function getTipoTexto(el: HTMLInputElement | HTMLSelectElement | null): string {
+      if (!el) return "";
+      return el instanceof HTMLSelectElement ? (el.selectedOptions[0]?.text ?? "") : (el.value ?? "");
+    }
+
     form?.addEventListener("submit", (e) => {
       e.preventDefault();
 
@@ -192,17 +206,13 @@ const tipos = {
       const paquete = +(document.getElementById("paq") as HTMLInputElement).value;
       const cantidadRaw = (document.getElementById("cantidad-area") as HTMLTextAreaElement).value.trim();
 
-      const tipoOpcion = document.querySelector<HTMLInputElement>('input[name="tipo-opcion"]:checked')?.value;
-      const tipo = (
-        tipoOpcion === "select" ? document.getElementById("tipoSelect") : document.getElementById("tipoInput")
-      ) as HTMLInputElement | HTMLSelectElement;
+      const tipo = getTipoOptions();
+      const tipoTexto = getTipoTexto(tipo);
 
       const cantidades = cantidadRaw
         .split(/[\s,]+/)
         .map(Number)
         .filter((n) => !isNaN(n));
-
-      const tipoTexto = tipo instanceof HTMLSelectElement ? (tipo.selectedOptions[0]?.text ?? "") : (tipo.value ?? "");
 
       const { paq, uni, total, bultos } = calcularPaquetes(paquete, cantidades, tipoTexto);
 

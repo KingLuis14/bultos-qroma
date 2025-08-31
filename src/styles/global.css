@@ -12,18 +12,7 @@
 
     body {
         background-color: #0a0f15;
-        /* font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            'Segoe UI',
-            Roboto,
-            Oxygen,
-            Ubuntu,
-            Cantarell,
-            'Open Sans',
-            'Helvetica Neue',
-            sans-serif; */
+
         font-size: clamp(0.8889rem, 0.8384rem + 0.2155vw, 1rem);
     }
 
@@ -153,10 +142,20 @@
         width: fit-content;
         border-radius: 100vh;
         padding: 0.1em 0.65em;
-         box-shadow: 0 5px 15px rgb(from var(--color-active) r g b / 15%);
+        box-shadow: 0 5px 15px rgb(from var(--color-active) r g b / 15%);
+    }
+
+
+    .resultTotals{
+        background-color: rgb(from var(--color-active) r g b / 17%);
+        border: 1px solid var(--color-active);
+        width: fit-content;
+        border-radius: .5rem;
+        padding: .25em .75em;
+        box-shadow: 0 5px 15px rgb(from var(--color-active) r g b / 30%);
     }
 }
 
-@theme{
-    --default-font-family : "Rubik", sans-serif;
+@theme {
+    --default-font-family: "Rubik", sans-serif;
 }

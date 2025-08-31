@@ -1,8 +1,8 @@
 <template>
   <div v-if="Object.keys(grouped).length > 0">
     <div v-for="(products, tipo) in grouped" :key="tipo" class="mb-5">
-      <section>
-        <header class="acordeon-header flex justify-between items-baseline">
+      <section class="bg-[#1a1f25] rounded-md overflow-hidden">
+        <header class="acordeon-header px-2.5 py-3 flex justify-between items-baseline">
           <div>
             <h2 class="text-2xl font-semibold first-letter:uppercase">{{ tipo }}</h2>
             <div class="flex gap-2 text-[#cbcbcb] mt-2.5 font-medium">
@@ -24,7 +24,7 @@
           </button>
         </header>
         
-        <div class="bg-[#1a1f25] rounded-xl mt-6" >
+        <div class="bg-[#1a1f25]" >
           <div class="acordeon-contenido isOpen">
             <div class="overflow-hidden">
               <div class="flex flex-col">
@@ -33,7 +33,7 @@
                   v-for="(item, i) in products"
                   :key="i"
                   :data-id="item.producto + ' ' + item.tipo"
-                  class="  grid grid-cols-[min-content_1fr_max-content] gap-4 items-center px-2 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-[#262b34]"
+                  class="  grid grid-cols-[min-content_1fr_max-content] gap-4 items-center px-2.5 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-[#262b34]"
                 >
                   <div class="pr-0">
                     <input
@@ -64,9 +64,15 @@
       </section>
     </div>
     <br />
-    <div class="flex gap-4 justify-between text-2xl">
-      <span>Items: {{ itemsGenerales }}</span>
-      <span>Total: {{ totalGeneral }}</span>
+    <div class="flex gap-4 text-center justify-between text-2xl">
+      <div class="flex flex-col  resultTotals cyan">
+        <span>Items</span>
+        <span> {{ itemsGenerales }}</span>
+      </div>
+      <div class="flex flex-col  resultTotals yellow">
+        <span>Total</span>
+        <span>{{ totalGeneral }}</span>
+      </div>
     </div>
     <br />
   </div>
